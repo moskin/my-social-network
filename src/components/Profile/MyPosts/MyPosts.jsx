@@ -1,35 +1,53 @@
 import React from "react";
 import s from './MyPosts.module.css';
+import Post from "./Post/Post";
+import {Field, reduxForm} from "redux-form";
+import {maxLengthCreator, required} from "../../../utils/validators/validators";
+import {Textarea} from "../../common/FormsControls/FormsControls";
 
-const MyPosts = () => {
+const AddNewPostForm = (props) => {
     return (
-        <div>
-            My posts
+        <form onSubmit={props.handleSubmit}>
             <div>
-                <textarea></textarea>
+                <Field name='newPostText' component={Textarea} placeholder={'Post message'}
+                       validate={[required, maxLength10]}/>
+            </div>
+            <div>
                 <button>Add post</button>
                 <button>Remove</button>
-
             </div>
+        </form>
+    )
+}
+
+const AddNewPostFormRedux = reduxForm({form: 'ProfileAddNewPostForm'}) (AddNewPostForm)
+
+const MyPosts = React.memo(props => {
+    // console.log('RENDER YO')
+    let postsElements =
+        [...props.posts]
+            .reverse()
+            .map(p => <Post key={p.id} message={p.message} likesCount={p.likesCount}/>);
+
+    let newPostElement = React.createRef();
+
+    let onAddPost = (values) => {
+        props.addPost(values.newPostText);
+        values.newPostText = ''
+    };
+
+    return (
+        <div className={s.postsBlock}>
+            <h1>My posts</h1>
+            <AddNewPostFormRedux onSubmit={onAddPost}/>
             <div className={s.posts}>
-                <div className={s.item}>
-                    <img src='https://res.cloudinary.com/teepublic/image/private/s--noMmjwIC--/t_Resized%20Artwork/c_fit,g_north_west,h_954,w_954/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_bbbbbb,e_outline:3:1000/c_mpad,g_center,h_1260,w_1260/b_rgb:eeeeee/c_limit,f_jpg,h_630,q_90,w_630/v1493565398/production/designs/1545694_1.jpg'></img>
-                    post 1
-                </div>
-                <div className={s.item}>
-                    <img src='https://res.cloudinary.com/teepublic/image/private/s--noMmjwIC--/t_Resized%20Artwork/c_fit,g_north_west,h_954,w_954/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_bbbbbb,e_outline:3:1000/c_mpad,g_center,h_1260,w_1260/b_rgb:eeeeee/c_limit,f_jpg,h_630,q_90,w_630/v1493565398/production/designs/1545694_1.jpg'></img>
-                    post 2
-                </div>
-                <div className={s.item}>
-                    <img src='https://res.cloudinary.com/teepublic/image/private/s--noMmjwIC--/t_Resized%20Artwork/c_fit,g_north_west,h_954,w_954/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_ffffff,e_outline:48/co_ffffff,e_outline:inner_fill:48/co_bbbbbb,e_outline:3:1000/c_mpad,g_center,h_1260,w_1260/b_rgb:eeeeee/c_limit,f_jpg,h_630,q_90,w_630/v1493565398/production/designs/1545694_1.jpg'></img>
-                    post 3
-                </div>
-
-
+                {postsElements}
             </div>
         </div>
     );
-};
+});
+
+const maxLength10 = maxLengthCreator(10)
 
 
 export default MyPosts;

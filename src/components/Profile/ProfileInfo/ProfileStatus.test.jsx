@@ -1,57 +1,50 @@
 import React from "react";
+import { create } from "react-test-renderer";
+import ProfileStatus from "./ProfileStatus";
 
-class ProfileStatus extends React.Component {
+describe("ProfileStatus component", () => {
+    test("status from props should be in the state", () => {
+        const component = create(<ProfileStatus status="it-kamasutra.com" />);
+        const instance = component.getInstance();
+        expect(instance.state.status).toBe("it-kamasutra.com");
+    });
 
-    state = {
-        editMode: false,
-        status: !this.props.status
-    }
+    test("after creation <span> should be displayed", () => {
+        const component = create(<ProfileStatus sttus="it-kamasutra.com" />);
+        const root = component.root;
+        let span = root.findByType("span");
+        expect(span).not.toBeNull();
+    });
 
-    activateEditMode = () => {
-        this.setState({
-            editMode: true
-        })
-    }
+    test("after creation <input> should contains correct status", () => {
+        const component = create(<ProfileStatus sttus="it-kamasutra.com" />);
+        const root = component.root;
+        expect(() => {
+            let input = root.findByType("input");
+        }).toThrow();
+    });
 
-    deactivateEditMode = () => {
-        this.setState({
-            editMode: false
-        });
-        this.props.updateStatus(this.state.status);
-    }
+    test("after creation span should contains correct status", () => {
+        const component = create(<ProfileStatus status="it-kamasutra.com" />);
+        const root = component.root;
+        let span = root.findByType("span");
+        expect(span.children[0]).toBe("it-kamasutra.com");
+    });
 
-    onStatusChange = (e) => {
-        this.setState({
-            status: e.currentTarget.value
-        });
-    }
+    test("input should be displayed in editMode instead of span", () => {
+        const component = create(<ProfileStatus status="it-kamasutra.com" />);
+        const root = component.root;
+        let span = root.findByType("span");
+        span.props.onDoubleClick();
+        let input = root.findByType("input");
+        expect(input.props.value).toBe("it-kamasutra.com");
+    });
 
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.status !== this.props.status) {
-            this.setState({
-                status: this.props.status
-            })
-        }
-    }
-
-
-    render() {
-        return (
-            <div>
-                {!this.state.editMode &&
-                <div>
-                    <span onDoubleClick={this.activateEditMode}>{this.props.status || 'no status'}</span>
-                </div>
-                }
-                {this.state.editMode &&
-                <div>
-                    <input onChange={this.onStatusChange} autoFocus={true} onBlur={this.deactivateEditMode} value={this.state.status}/>
-                </div>
-                }
-            </div>
-        );
-    };
-}
-
-
-export default ProfileStatus;
+    test("callback should be called", () => {
+        const mockCallback = jest.fn();
+        const component = create(<ProfileStatus status="it-kamasutra.com" updateStatus={mockCallback}/>);
+        const instance = component.getInstance();
+        instance.deactivateEditMode();
+        expect(mockCallback.mock.calls.length).toBe(1);
+    });
+});
